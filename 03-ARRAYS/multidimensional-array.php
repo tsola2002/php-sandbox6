@@ -10,10 +10,7 @@
     <?php
     $flower_shop = array("category1" => array("Lotus", 12.50, 2), 
     "category2" => array("White Rose", 1.75, 15),
-    "category3" => array("Red Rose", 2.15, 8));
-
-
-    
+    "category3" => array("Red Rose", 2.15, 8));  
     
     echo $flower_shop["category3"][0] . "<br>";
     echo $flower_shop["category2"][2] ."<br>";
