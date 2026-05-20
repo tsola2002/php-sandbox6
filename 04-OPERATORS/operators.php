@@ -30,9 +30,33 @@
 
     <p> Minus Equals:
         <?php 
-        // ASSIGNMENT OPERATORS
+        $b = 5;
+        echo $b -= 1; //  $b = $b - 1
+        ?>
+    </p>
+    <p> Plus Equals:
+        <?php 
         $a = 3;
         echo $a += 5; //  $a = $a + 5
+        ?>
+    </p>
+    <p> Multiply Equals:
+        <?php 
+        $c = 6;
+        echo $c *= 3; //  $c = $c * 3
+        ?>
+    </p>
+    <p> Divide Equals:
+        <?php 
+        $d = 10;
+        echo $d /= 2; //  $d = $d / 2
+        ?>
+    </p>
+    <p> Concatenation Equals:
+        <?php 
+        // STRING OPERATORS
+        $e = "<strong>Hello</strong>";
+        echo $e .= " There my friend";
         ?>
     </p>
 </body>
