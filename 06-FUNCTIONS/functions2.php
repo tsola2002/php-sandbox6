@@ -33,6 +33,20 @@
 
     $info = cal_info(0);
     print_r($info);
+
+    // USER DEFINED FUNCTIONS 
+
+    function add($x, $y){
+        return $x + $y;
+    }
+
+    echo "<br>";
+    $result = add(1, 2);
+    echo "<br>The Result of The Addition is: " . $result . "<br>";
+
+
+
+
     ?>
 </body>
 </html>
