@@ -44,7 +44,24 @@
     $result = add(1, 2);
     echo "<br>The Result of The Addition is: " . $result . "<br>";
 
+    function calc_tax($product_category, $product_name, $price){
+        if($product_category == "mobile"){
+            $total_price = (17.5 / 100) * $price + $price;
 
+            echo "Total price of " . $product_name . " is: $" . $total_price . "<br>";
+        }
+
+        if($product_category == "medicine"){
+            $total_price = $price;
+            echo "Total price of" . $product_name . " is: $" . $total_price . "<br>";
+        }
+    }
+
+    // $product_category = "mobile";
+    // calc_tax($product_category, "Iphone 14 Pro Max", 120000);
+
+    $product_category = "medicine";
+    calc_tax($product_category, "Paracetamol", 500);
 
 
     ?>
