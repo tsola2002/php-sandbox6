@@ -6,13 +6,17 @@
     <title>Functions</title>
 </head>
 <body>
-    <h1>Working With Functions</h1>
+    <h1>Working With Function</h1>
     <?php
     // BUILT-IN FUNCTIONS
     //phpinfo();
 
     // DATE FUNCTIONS 
-    echo date('l');
+    // echo date('l') ."<br>";
+    //echo date(" l dS \of F Y h :i :s A") . "<br>";
+
+    // TIME FUNCTIONS
+     //echo time() . "<br>";
     
     ?>
 </body>
