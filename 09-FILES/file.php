@@ -17,11 +17,22 @@
     //    }
 
     // 2. this code will delete a file document
-       if(unlink("peter.php")) {
-            echo "File deleted successfully";
-       } else {
-            echo "File deletion failed";
-       }
+    //    if(unlink("peter.php")) {
+    //         echo "File deleted successfully";
+    //    } else {
+    //         echo "File deletion failed";
+    //    }
+
+    // 3. Wriing to a file document
+
+        // $file = fopen("peter.php", "a");
+        // $data = "We just added this content to peter.php \n";
+        // fwrite($file, $data);
+        // fclose($file);
+
+
+     // 4.  create an add content at the same time
+     file_put_contents("peter.php", "We just added this content to peter.php \n", FILE_APPEND);    
     ?>
     
 </body>
