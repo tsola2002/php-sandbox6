@@ -32,7 +32,24 @@
 
 
      // 4.  create an add content at the same time
-     file_put_contents("peter.php", "We just added this content to peter.php \n", FILE_APPEND);    
+    //  file_put_contents("peter.php", "We just added this content to peter.php \n", FILE_APPEND);
+     
+     // 5. reading contents of the file
+    //  $resource  = fopen("peter.php", "r");
+    //  $content = fread($resource, filesize("peter.php"));
+    //  fclose($resource);
+
+    // echo $content;
+
+    // 6. creating a folder
+    //   if(mkdir("my-folder")) {
+    //     echo "Folder was created";
+    //   } else {
+    //     echo "folder was not created";
+    //   }
+
+    // 7. Deleting a folder
+        rmdir("my-folder");
     ?>
     
 </body>
