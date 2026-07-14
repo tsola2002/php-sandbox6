@@ -49,7 +49,7 @@
     //   }
 
     // 7. Deleting a folder
-        rmdir("my-folder");
+        // rmdir("my-folder");
     ?>
     
 </body>
