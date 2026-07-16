@@ -1,0 +1,4 @@
+[16-Jul-2026 15:51:57 Europe/Berlin] PHP Fatal error:  Uncaught DivisionByZeroError: Division by zero in C:\xampp\htdocs\php-sandbox\10-ERROR-HANDLING\error-reporting.php:20
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\php-sandbox\10-ERROR-HANDLING\error-reporting.php on line 20
