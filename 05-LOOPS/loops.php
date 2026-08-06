@@ -18,24 +18,24 @@
     // }
 
     // DO WHILE LOOP 
-    // $count = 0;
-    // do{
-    //   echo $count . "<br>";
-    // }while(++$count < 10)
+    $count = 0;
+    do {
+        echo $count . "<br>";
+    } while (++$count < 10);
 
     // FOR LOOPS 
-    // for( $i = 0; $i <= 10; $i++ ){
-    //     echo $i;
-    //     echo "<br>";
-    // }
-
-    // FOR EACH LOOP 
-    $books =  array("Gone with the wind", "Perter Pan", "Harry Potter", "Things Fall Apart");
-
-    foreach ($books as $book) {
-        echo $book;
+    for( $i = 0; $i <= 10; $i++ ){
+        echo $i;
         echo "<br>";
     }
+
+    // FOR EACH LOOP 
+    // $books =  array("Gone with the wind", "Perter Pan", "Harry Potter", "Things Fall Apart");
+
+    // foreach ($books as $book) {
+    //     echo $book;
+    //     echo "<br>";
+    // }
 
 
     ?>
