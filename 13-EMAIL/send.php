@@ -1,13 +1,17 @@
-<?php 
+<?php
 
-use PHPMailer\PHPMailer;
-// require 'vendor/autoload.php';
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php';
 
 if(isset($_POST['send'])){
     // turn on phpmailer
     $mail = new PHPMailer(true);
 
     // configure smtp 
+    $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'omatsolasobotie@gmail.com';

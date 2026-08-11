@@ -12,7 +12,7 @@
         Email: <input type="email" name="email" required><br><br>
         Subject: <input type="text" name="subject" required><br><br>
         Message: <textarea name="message" required></textarea><br><br>
-        <input type="submit" value="Send Email">
+        <input type="submit" name="send" value="Send Email">
     </form>
 </body>
 </html>
