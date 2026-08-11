@@ -8,5 +8,7 @@
 </head>
 <body class="bg-light">
     <h1>CRUD Data Table with AJAX</h1>
+
+    
 </body>
 </html>
