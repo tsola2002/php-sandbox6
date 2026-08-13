@@ -16,17 +16,17 @@
                 <form id="studentForm" action="" class="row g-3">
                     <input type="hidden" id="id">
 
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label for="" class="form-label">Name</label>
                         <input id="name" type="text" class="form-control" required>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label for="" class="form-label">Email</label>
                         <input id="email" type="email" class="form-control" required>
                     </div>
 
-                    <div class="col-md-2 d-grid">
+                    <div class="col-md-3 d-grid">
                         <label for="" class="form-label invisible">Submit</label>
                         <button class="btn btn-success">Save</button>
                     </div>
@@ -98,17 +98,26 @@
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
             xhr.onload = function(){
+                console.log("Response from save.php:", xhr.responseText);
+
                 if(xhr.status === 200){
-                    document.getElementById("studentForm").reset();
-                    document.getElementById("id").value = "";
-                    loadStudents();
+
+                    if(xhr.responseText.trim() === "success"){
+                        document.getElementById("studentForm").reset();
+                        loadStudents();
+                    } else {
+                        alert(xhr.responseText);
+                    }
+
+                } else {
+                    alert("Request failed. HTTP status: " + xhr.status);
                 }
             };
 
             xhr.send(
                 "id=" + encodeURIComponent(id) +
                 "&name=" + encodeURIComponent(name) +
-                "&email=" + email
+                "&email=" + encodeURIComponent(email)
             );
         });
     </script>

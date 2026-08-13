@@ -1,7 +1,7 @@
-CREATE TABLE tbl_student(
-    id int(11) primary key,
-    name varchar(50),
-    email varchar(255)
+CREATE TABLE tbl_student (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL
 );
 
 INSERT INTO tbl_student(id, name, email) VALUES

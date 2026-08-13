@@ -1,25 +1,37 @@
-<?php 
+<?php
 
 require "database.php";
 
-// GRAB INFO FROM POST SUPER GLOBAL
+$id = $_POST['id'] ?? "";
+$name = $_POST['name'] ?? "";
+$email = $_POST['email'] ?? "";
 
-$id  = $_POST['id'] ?? "";
-$name = mysqli_real_escape_string($connection, $_POST['name']);
-$email = mysqli_real_escape_string($connection, $_POST['email']);
+$name = mysqli_real_escape_string($connection, $name);
+$email = mysqli_real_escape_string($connection, $email);
 
-
-// SAVE FOR DETAILS INTO THE DATABASE
-if($id){
-    // UPDATE
-    $query = "UPDATE tbl_student
-              SET name='$name',
-                  email ='$email'
-              WHERE id=$id";
-} else{
-    // INSERT
-    $query = "INSERT INTO tbl_student(name, email)
-              VALUES ('$name', '$email')"; 
+if (empty($name) || empty($email)) {
+    die("Name and email are required.");
 }
 
-mysqli_query($connection, $query);
+if (empty($id)) {
+
+    // INSERT
+    $query = "INSERT INTO tbl_student (name, email)
+              VALUES ('$name', '$email')";
+
+} else {
+
+    // UPDATE
+    $id = mysqli_real_escape_string($connection, $id);
+
+    $query = "UPDATE tbl_student
+              SET name = '$name',
+                  email = '$email'
+              WHERE id = '$id'";
+}
+
+if (mysqli_query($connection, $query)) {
+    echo "success";
+} else {
+    echo "error: " . mysqli_error($connection);
+}
