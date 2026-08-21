@@ -4,6 +4,8 @@ CREATE TABLE tbl_student (
     email VARCHAR(255) NOT NULL
 );
 
+
+
 INSERT INTO tbl_student(id, name, email) VALUES
 (1, 'John', 'john.doe@yahoo.com'),
 (2, 'Alice', 'alice.doe@yahoo.com'),
