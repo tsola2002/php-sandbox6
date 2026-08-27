@@ -44,4 +44,11 @@ if (isset($_SESSION['user'])) {
 </div>
 </nav>
 <div class="container">
-<?php if (!$loggedin) echo "<p class='text-muted'>You must be logged in to use this app</p>"; ?>
+<?php 
+// if (!$loggedin) 
+//    {
+
+//    echo "<p class='text-muted'>You must be logged in to use this app</p>";
+//    } 
+
+?>
