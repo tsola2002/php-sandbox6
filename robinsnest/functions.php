@@ -56,20 +56,95 @@ function queryMysql($query, $params = []) {
     return str_replace("'", "", $result); // So now remove them
   }
 
-  function showProfile($user)
-  {
+  // function showProfile($user)
+  // {
+  //   global $pdo;
+
+  //   if (file_exists("$user.jpg"))
+  //     echo "<img src='$user.jpg' style='float:left;'>";
+
+  //   $result = $pdo->query("SELECT * FROM profiles WHERE user='$user'");
+
+  //   while ($row = $result->fetch())
+  //   {
+  //     die(stripslashes($row['text']) . "<br style='clear:left;'><br>");
+  //   }
+    
+  //   echo "<p>Nothing to see here, yet</p><br>";
+  // }
+
+
+
+function showProfile($profileUser)
+{
     global $pdo;
 
-    if (file_exists("$user.jpg"))
-      echo "<img src='$user.jpg' style='float:left;'>";
+    /*
+    |--------------------------------------------------------------------------
+    | Get Profile Image
+    |--------------------------------------------------------------------------
+    */
 
-    $result = $pdo->query("SELECT * FROM profiles WHERE user='$user'");
+    $imagePath = $profileUser . '.jpg';
 
-    while ($row = $result->fetch())
-    {
-      die(stripslashes($row['text']) . "<br style='clear:left;'><br>");
+    if (file_exists($imagePath)) {
+
+        echo '
+            <div class="text-center mb-3">
+                <img
+                    src="' . htmlspecialchars($imagePath) . '"
+                    alt="' . htmlspecialchars($profileUser) . ' profile picture"
+                    class="img-fluid rounded-circle shadow-sm"
+                    style="width: 120px; height: 120px; object-fit: cover;"
+                >
+            </div>
+        ';
     }
-    
-    echo "<p>Nothing to see here, yet</p><br>";
-  }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Profile Details
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = queryMysql(
+        "SELECT text FROM profiles WHERE user = ?",
+        [$profileUser]
+    );
+
+
+    if ($row = $stmt->fetch()) {
+
+        $profileText = htmlspecialchars(
+            stripslashes($row['text'])
+        );
+
+        echo '
+            <div class="text-center">
+
+                <p class="mb-0 text-muted">
+                    ' . nl2br($profileText) . '
+                </p>
+
+            </div>
+        ';
+
+    } else {
+
+        echo '
+            <div class="text-center text-muted py-3">
+
+                <i class="bi bi-person-circle fs-1 d-block mb-2"></i>
+
+                <p class="mb-0">
+                    This user has not added a profile description yet.
+                </p>
+
+            </div>
+        ';
+    }
+}
+
+
 ?>

@@ -2,6 +2,13 @@
 
 require_once 'header.php';
 
+
+/*
+|--------------------------------------------------------------------------
+| Authentication
+|--------------------------------------------------------------------------
+*/
+
 if (!$loggedin) {
     die("</div></body></html>");
 }
@@ -9,67 +16,169 @@ if (!$loggedin) {
 
 /*
 |--------------------------------------------------------------------------
-| Determine Which User's Messages We're Viewing
+| Determine Profile Being Viewed
 |--------------------------------------------------------------------------
 */
 
 if (isset($_GET['view'])) {
+
     $view = trim($_GET['view']);
+
 } else {
+
     $view = $user;
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Post New Message
+| Make Sure User Exists
 |--------------------------------------------------------------------------
 */
+
+$stmt = queryMysql(
+    "SELECT user FROM members WHERE user = ?",
+    [$view]
+);
+
+if (!$stmt->fetch()) {
+
+    echo '
+        <div class="container py-5">
+
+            <div class="alert alert-danger">
+                User not found.
+            </div>
+
+        </div>
+    ';
+
+    die("</div></body></html>");
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Delete Message
+|--------------------------------------------------------------------------
+*/
+
+if (isset($_GET['erase'])) {
+
+    $erase = (int) $_GET['erase'];
+
+    queryMysql(
+        "DELETE FROM messages
+         WHERE id = ?
+         AND recip = ?",
+        [$erase, $user]
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Send Message
+|--------------------------------------------------------------------------
+*/
+
+$messageError = "";
+$messageSuccess = "";
+
 
 if (isset($_POST['text'])) {
 
     $text = trim($_POST['text']);
 
-    if ($text !== "") {
+    $pm = isset($_POST['pm'])
+        ? (int) $_POST['pm']
+        : 0;
 
-        $pm = isset($_POST['pm']) ? substr($_POST['pm'], 0, 1) : "0";
 
-        $time = time();
+    /*
+    |--------------------------------------------------------------------------
+    | Validate Message
+    |--------------------------------------------------------------------------
+    */
+
+    if ($text === "") {
+
+        $messageError = "Please enter a message.";
+
+    } elseif (strlen($text) > 4096) {
+
+        $messageError = "Your message is too long.";
+
+    } else {
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Insert Message
+        |--------------------------------------------------------------------------
+        */
 
         queryMysql(
-            "INSERT INTO messages (auth, recip, pm, time, message)
-             VALUES (?, ?, ?, ?, ?)",
-            [$user, $view, $pm, $time, $text]
+            "INSERT INTO messages
+            (auth, recip, pm, time, message)
+            VALUES (?, ?, ?, ?, ?)",
+            [
+                $user,
+                $view,
+                $pm,
+                time(),
+                $text
+            ]
         );
+
+
+        $messageSuccess = "Message posted successfully.";
     }
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Display Messages
+| Profile Name
 |--------------------------------------------------------------------------
 */
 
-if ($view !== "") {
+if ($view === $user) {
 
-    if ($view === $user) {
+    $profileName = "Your";
+    $profileTitle = "Your Messages";
 
-        $name1 = "Your";
-        $name2 = "Your";
+} else {
 
-    } else {
+    $profileName = htmlspecialchars($view);
+    $profileTitle = htmlspecialchars($view) . "'s Messages";
+}
 
-        $name1 = "
-            <a 
-                href='members.php?view=" . urlencode($view) . "&r=$randstr'
-                class='text-decoration-none'>
-                " . htmlspecialchars($view) . "
-            </a>'s
-        ";
 
-        $name2 = htmlspecialchars($view) . "'s";
-    }
+/*
+|--------------------------------------------------------------------------
+| Retrieve Profile Information
+|--------------------------------------------------------------------------
+*/
+
+$profileStmt = queryMysql(
+    "SELECT text
+     FROM profiles
+     WHERE user = ?",
+    [$view]
+);
+
+$profile = $profileStmt->fetch();
+
+
+/*
+|--------------------------------------------------------------------------
+| Retrieve Profile Image
+|--------------------------------------------------------------------------
+*/
+
+$imagePath = $view . '.jpg';
 
 ?>
 
@@ -77,23 +186,98 @@ if ($view !== "") {
 
     <div class="row justify-content-center">
 
-        <div class="col-md-8 col-lg-7">
+        <div class="col-md-9 col-lg-8">
 
-            <!-- Page Header -->
-            <div class="mb-4">
 
-                <h3 class="mb-3">
-                    <?= $name1 ?> Messages
-                </h3>
+            <!-- ==========================================================
+                 PROFILE CARD
+            =========================================================== -->
 
-                <div class="card shadow-sm">
+            <div class="card shadow-sm mb-4">
 
-                    <div class="card-body">
+                <div class="card-body">
 
-                        <?php
-                        // Display profile
-                        showProfile($view);
-                        ?>
+                    <div class="text-center">
+
+
+                        <!-- Profile Image -->
+
+                        <?php if (file_exists($imagePath)): ?>
+
+                            <img
+                                src="<?= htmlspecialchars($imagePath) ?>"
+                                alt="<?= htmlspecialchars($view) ?>"
+                                class="rounded-circle img-fluid shadow-sm mb-3"
+                                style="
+                                    width: 130px;
+                                    height: 130px;
+                                    object-fit: cover;
+                                "
+                            >
+
+                        <?php else: ?>
+
+                            <div
+                                class="rounded-circle bg-light
+                                       d-flex align-items-center
+                                       justify-content-center
+                                       mx-auto mb-3 shadow-sm"
+                                style="
+                                    width: 130px;
+                                    height: 130px;
+                                "
+                            >
+
+                                <i class="bi bi-person fs-1 text-secondary"></i>
+
+                            </div>
+
+                        <?php endif; ?>
+
+
+                        <!-- Profile Name -->
+
+                        <h2 class="mb-2">
+
+                            <?= $profileName ?>
+
+                        </h2>
+
+
+                        <!-- Profile Description -->
+
+                        <?php if ($profile): ?>
+
+                            <p class="text-muted mb-3">
+
+                                <?= nl2br(
+                                    htmlspecialchars(
+                                        stripslashes($profile['text'])
+                                    )
+                                ) ?>
+
+                            </p>
+
+                        <?php else: ?>
+
+                            <p class="text-muted mb-3">
+
+                                No profile description available.
+
+                            </p>
+
+                        <?php endif; ?>
+
+
+                        <!-- View Profile Button -->
+
+                        <a
+                            href="members.php?view=<?= urlencode($view) ?>&r=<?= $randstr ?>"
+                            class="btn btn-outline-primary btn-sm"
+                        >
+                            <i class="bi bi-person"></i>
+                            View Profile
+                        </a>
 
                     </div>
 
@@ -102,30 +286,88 @@ if ($view !== "") {
             </div>
 
 
-            <!-- Message Form -->
+
+            <!-- ==========================================================
+                 MESSAGE FORM
+            =========================================================== -->
+
             <div class="card shadow-sm mb-4">
 
                 <div class="card-header">
+
                     <h5 class="mb-0">
-                        Leave a Message
+
+                        <i class="bi bi-chat-left-text"></i>
+
+                        Send a Message
+
                     </h5>
+
                 </div>
+
 
                 <div class="card-body">
 
-                    <form 
+
+                    <!-- Success -->
+
+                    <?php if ($messageSuccess): ?>
+
+                        <div
+                            class="alert alert-success alert-dismissible fade show"
+                            role="alert"
+                        >
+
+                            <?= htmlspecialchars($messageSuccess) ?>
+
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                            ></button>
+
+                        </div>
+
+                    <?php endif; ?>
+
+
+                    <!-- Error -->
+
+                    <?php if ($messageError): ?>
+
+                        <div
+                            class="alert alert-danger"
+                            role="alert"
+                        >
+
+                            <?= htmlspecialchars($messageError) ?>
+
+                        </div>
+
+                    <?php endif; ?>
+
+
+                    <form
                         method="post"
                         action="messages.php?view=<?= urlencode($view) ?>&r=<?= $randstr ?>"
                     >
 
-                        <!-- Message Visibility -->
+
+                        <!-- Message Type -->
+
                         <div class="mb-3">
 
                             <label class="form-label fw-semibold">
+
                                 Message Type
+
                             </label>
 
-                            <div class="d-flex gap-3">
+
+                            <div class="d-flex gap-4">
+
+
+                                <!-- Public -->
 
                                 <div class="form-check">
 
@@ -142,11 +384,17 @@ if ($view !== "") {
                                         class="form-check-label"
                                         for="public"
                                     >
+
+                                        <i class="bi bi-globe"></i>
+
                                         Public
+
                                     </label>
 
                                 </div>
 
+
+                                <!-- Private -->
 
                                 <div class="form-check">
 
@@ -162,7 +410,11 @@ if ($view !== "") {
                                         class="form-check-label"
                                         for="private"
                                     >
+
+                                        <i class="bi bi-lock"></i>
+
                                         Private
+
                                     </label>
 
                                 </div>
@@ -172,14 +424,17 @@ if ($view !== "") {
                         </div>
 
 
-                        <!-- Message Text -->
+                        <!-- Message -->
+
                         <div class="mb-3">
 
                             <label
                                 for="message"
                                 class="form-label fw-semibold"
                             >
-                                Your Message
+
+                                Message
+
                             </label>
 
                             <textarea
@@ -187,7 +442,8 @@ if ($view !== "") {
                                 id="message"
                                 class="form-control"
                                 rows="4"
-                                placeholder="Type your message here..."
+                                maxlength="4096"
+                                placeholder="Write a message to <?= htmlspecialchars($view) ?>..."
                                 required
                             ></textarea>
 
@@ -195,12 +451,21 @@ if ($view !== "") {
 
 
                         <!-- Submit -->
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                        >
-                            Post Message
-                        </button>
+
+                        <div class="d-grid">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                            >
+
+                                <i class="bi bi-send"></i>
+
+                                Send Message
+
+                            </button>
+
+                        </div>
 
                     </form>
 
@@ -209,210 +474,289 @@ if ($view !== "") {
             </div>
 
 
+
+            <!-- ==========================================================
+                 MESSAGES
+            =========================================================== -->
+
 <?php
+
+/*
+|--------------------------------------------------------------------------
+| Retrieve Messages
+|--------------------------------------------------------------------------
+|
+| Public messages are visible to everyone.
+|
+| Private messages are visible only to:
+|
+| 1. The person who sent them
+| 2. The person who received them
+|
+*/
+
+$messageStmt = queryMysql(
+    "SELECT *
+     FROM messages
+     WHERE recip = ?
+     ORDER BY time DESC",
+    [$view]
+);
+
+
+$messages = [];
+
+while ($row = $messageStmt->fetch()) {
 
     /*
     |--------------------------------------------------------------------------
-    | Delete Message
+    | Public Message
     |--------------------------------------------------------------------------
     */
 
-    date_default_timezone_set('UTC');
+    if ((int)$row['pm'] === 0) {
 
-    if (isset($_GET['erase'])) {
+        $messages[] = $row;
 
-        $erase = (int) $_GET['erase'];
-
-        queryMysql(
-            "DELETE FROM messages
-             WHERE id = ? AND recip = ?",
-            [$erase, $user]
-        );
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Retrieve Messages
+    | Private Message
     |--------------------------------------------------------------------------
+    |
+    | Only the sender or recipient can see it.
+    |
     */
 
-    $result = queryMysql(
-        "SELECT *
-         FROM messages
-         WHERE recip = ?
-         ORDER BY time DESC",
-        [$view]
-    );
+    elseif (
+        $row['auth'] === $user ||
+        $row['recip'] === $user
+    ) {
 
-    $num = $result->rowCount();
+        $messages[] = $row;
+    }
+}
 
 ?>
 
 
             <!-- Messages Header -->
+
             <div class="d-flex justify-content-between align-items-center mb-3">
 
                 <h4 class="mb-0">
-                    Messages
+
+                    <i class="bi bi-chat-dots"></i>
+
+                    <?= $profileTitle ?>
+
                 </h4>
 
-                <span class="badge bg-secondary">
-                    <?= $num ?>
+
+                <span class="badge bg-primary rounded-pill">
+
+                    <?= count($messages) ?>
+
                 </span>
 
             </div>
 
 
-<?php
 
-    /*
-    |--------------------------------------------------------------------------
-    | Display Messages
-    |--------------------------------------------------------------------------
-    */
+<?php if (count($messages) > 0): ?>
 
-    while ($row = $result->fetch()) {
 
-        if (
-            $row['pm'] == 0 ||
-            $row['auth'] === $user ||
-            $row['recip'] === $user
-        ) {
+<?php foreach ($messages as $row): ?>
 
-            $author = htmlspecialchars($row['auth']);
-            $message = htmlspecialchars($row['message']);
 
-            $date = date(
-                'M jS \'y g:ia',
-                $row['time']
-            );
+                <!-- ======================================================
+                     MESSAGE CARD
+                ======================================================= -->
 
-?>
+                <div class="card shadow-sm mb-3">
 
-            <div class="card shadow-sm mb-3">
+                    <div class="card-body">
 
-                <div class="card-body">
 
-                    <!-- Message Header -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <!-- Message Header -->
 
-                        <div>
+                        <div
+                            class="d-flex justify-content-between
+                                   align-items-start mb-3"
+                        >
 
-                            <a
-                                href="members.php?view=<?= urlencode($row['auth']) ?>&r=<?= $randstr ?>"
-                                class="fw-semibold text-decoration-none"
-                            >
-                                <?= $author ?>
-                            </a>
+                            <div>
 
-                            <?php if ($row['pm'] == 0): ?>
+                                <a
+                                    href="members.php?view=<?= urlencode($row['auth']) ?>&r=<?= $randstr ?>"
+                                    class="fw-semibold text-decoration-none"
+                                >
 
-                                <span class="badge bg-primary ms-2">
-                                    Public
-                                </span>
+                                    <?= htmlspecialchars($row['auth']) ?>
 
-                            <?php else: ?>
+                                </a>
 
-                                <span class="badge bg-warning text-dark ms-2">
-                                    Private
-                                </span>
 
-                            <?php endif; ?>
+                                <?php if ((int)$row['pm'] === 0): ?>
+
+                                    <span class="badge bg-success ms-2">
+
+                                        <i class="bi bi-globe"></i>
+
+                                        Public
+
+                                    </span>
+
+                                <?php else: ?>
+
+                                    <span class="badge bg-warning text-dark ms-2">
+
+                                        <i class="bi bi-lock"></i>
+
+                                        Private
+
+                                    </span>
+
+                                <?php endif; ?>
+
+                            </div>
+
+
+                            <small class="text-muted">
+
+                                <?= date(
+                                    'M jS \'y g:ia',
+                                    $row['time']
+                                ) ?>
+
+                            </small>
 
                         </div>
 
 
-                        <small class="text-muted">
-                            <?= $date ?>
-                        </small>
 
-                    </div>
+                        <!-- Message Text -->
+
+                        <div class="bg-light rounded p-3 mb-3">
+
+                            <?php if ((int)$row['pm'] === 0): ?>
+
+                                <div class="text-muted small mb-1">
+
+                                    <i class="bi bi-chat-quote"></i>
+
+                                    wrote:
+
+                                </div>
+
+                            <?php else: ?>
+
+                                <div class="text-muted small mb-1">
+
+                                    <i class="bi bi-lock"></i>
+
+                                    whispered:
+
+                                </div>
+
+                            <?php endif; ?>
 
 
-                    <!-- Message -->
-                    <p class="mb-3">
+                            <div class="message-content">
 
-                        <?php if ($row['pm'] == 0): ?>
+                                <?= nl2br(
+                                    htmlspecialchars($row['message'])
+                                ) ?>
 
-                            <span class="text-muted">
-                                wrote:
-                            </span>
+                            </div>
 
-                            &quot;<?= $message ?>&quot;
+                        </div>
 
-                        <?php else: ?>
 
-                            <span class="text-muted">
-                                whispered:
-                            </span>
 
-                            <span class="text-primary fst-italic">
-                                &quot;<?= $message ?>&quot;
-                            </span>
+                        <!-- Message Actions -->
+
+                        <?php if ($row['recip'] === $user): ?>
+
+                            <a
+                                href="messages.php?view=<?= urlencode($view) ?>&erase=<?= (int)$row['id'] ?>&r=<?= $randstr ?>"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Are you sure you want to delete this message?');"
+                            >
+
+                                <i class="bi bi-trash"></i>
+
+                                Delete
+
+                            </a>
 
                         <?php endif; ?>
 
-                    </p>
 
-
-                    <!-- Erase Button -->
-                    <?php if ($row['recip'] === $user): ?>
-
-                        <a
-                            href="messages.php?view=<?= urlencode($view) ?>&erase=<?= (int) $row['id'] ?>&r=<?= $randstr ?>"
-                            class="btn btn-sm btn-outline-danger"
-                            onclick="return confirm('Are you sure you want to erase this message?');"
-                        >
-                            Erase
-                        </a>
-
-                    <?php endif; ?>
+                    </div>
 
                 </div>
 
-            </div>
 
-<?php
-
-        }
-    }
+<?php endforeach; ?>
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | No Messages
-    |--------------------------------------------------------------------------
-    */
+<?php else: ?>
 
-    if (!$num) {
 
-?>
+                <!-- No Messages -->
 
-            <div class="alert alert-info text-center">
+                <div class="card shadow-sm">
 
-                <i class="bi bi-chat-dots"></i>
-                No messages yet.
+                    <div class="card-body text-center py-5">
 
-            </div>
+                        <i
+                            class="bi bi-chat-square-text
+                                   display-4 text-muted"
+                        ></i>
 
-<?php
+                        <h5 class="mt-3">
 
-    }
+                            No messages yet
 
-?>
+                        </h5>
 
-            <!-- Refresh -->
-            <div class="d-grid mt-4">
+                        <p class="text-muted mb-0">
+
+                            Be the first person to leave a message.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+<?php endif; ?>
+
+
+
+            <!-- ==========================================================
+                 REFRESH
+            =========================================================== -->
+
+            <div class="d-grid mt-4 mb-5">
 
                 <a
                     href="messages.php?view=<?= urlencode($view) ?>&r=<?= $randstr ?>"
                     class="btn btn-outline-primary"
                 >
+
+                    <i class="bi bi-arrow-clockwise"></i>
+
                     Refresh Messages
+
                 </a>
 
             </div>
+
 
         </div>
 
@@ -420,10 +764,6 @@ if ($view !== "") {
 
 </div>
 
-<?php
-}
-
-?>
 
 </div>
 </body>
